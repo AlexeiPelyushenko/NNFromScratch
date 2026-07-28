@@ -19,7 +19,7 @@ class InputVec:
 
 
 class Layer:
-    def __init__(self, dim, last_dim, forward_prop=sigmoid, backward_prop=sigmoid_d):
+    def __init__(self, dim, last_dim, forward_prop=sigmoid, backward_prop=sigmoid_d, learning_rate=0.5):
         self.weights = np.random.uniform(-1.0, 1.0, (last_dim, dim))
         self.biases = np.zeros(dim, dtype=float)
 
@@ -29,6 +29,8 @@ class Layer:
         self.last_input = None
         self.last_z = None
         self.last_output = None
+        
+        self.learning_rate = learning_rate
 
     def __rmatmul__(self, other):
         assert isinstance(other, InputVec)
@@ -42,7 +44,7 @@ class Layer:
         self.last_output = self.forward_propagate(self.last_z)
         return self.last_output
 
-    def backward(self, grad_output, learning_rate):
+    def backward(self, grad_output):
         grad_output = np.asarray(grad_output, dtype=float)
 
         if self.last_input is None or self.last_z is None:
@@ -53,8 +55,8 @@ class Layer:
         grad_biases = grad_z
         grad_input = grad_z @ self.weights.T
 
-        self.weights -= learning_rate * grad_weights
-        self.biases -= learning_rate * grad_biases
+        self.weights -= self.learning_rate * grad_weights
+        self.biases -= self.learning_rate * grad_biases
 
         return grad_input
 
@@ -82,7 +84,7 @@ if __name__ == "__main__":
         Layer(1, 2)
     ]
 
-    learning_rate = 0.5
+    # learning_rate = 0.5
     epochs = 10000
 
     for epoch in range(epochs):
@@ -98,7 +100,7 @@ if __name__ == "__main__":
 
             grad = 2 * error
             for layer in reversed(layers):
-                grad = layer.backward(grad, learning_rate)
+                grad = layer.backward(grad)
 
         if epoch % 1000 == 0:
             print(f"epoch {epoch:5d} | loss {total_loss / len(X):.6f}")
