@@ -5,6 +5,17 @@ from easydict import EasyDict
 with open("config.yaml", "r") as f:
     config = EasyDict(yaml.safe_load(f))
 
+
+"""
+Convention:
+
+Activation functions + their derivatives should return numpy arrays.
+Loss functions return floats.
+"""
+
+identity = lambda x: x
+identity_d = lambda x: np.ones_like(x)
+
 def sigmoid(x):
     return 1 / (1 + np.e**(-x))
 
@@ -35,7 +46,7 @@ def MSE(x, y):
 
 def cross_entropy(p, y, softmax_preprocess=True):
     """
-    Gradient: p - y
+    Gradient: p - y (if combining softmax)
     
     Calculate the cross entropy loss of a prediction
     p: predictions

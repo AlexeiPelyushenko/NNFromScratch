@@ -4,7 +4,7 @@ import sys, os
 parent = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.dirname(parent))
 
-from layer import Layer, InputVec
+from layers import FFLayer, InputVec
 from nn_funcs import *
 
 if __name__ == "__main__":
@@ -26,9 +26,9 @@ if __name__ == "__main__":
     identity_d = lambda x: 1.0
 
     layers = [
-        Layer(2, 2),  # hidden: sigmoid
+        FFLayer(2, 2),  # hidden: sigmoid
         # output: linear logits (softmax applied outside for CE)
-        Layer(1, 2)
+        FFLayer(1, 2)
     ]
 
     epochs = 10000
