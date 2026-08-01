@@ -1,2 +1,1 @@
-config:
-  leaky_relu_coeff: 0.01
+LEAKY_RELU_COEFF: 0.01

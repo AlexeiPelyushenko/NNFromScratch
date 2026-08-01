@@ -1,9 +1,12 @@
 import numpy as np
 from nn_funcs import *
-import dill
 
 
 class InputVec:
+    """
+    Defined this class for the purpose of using dunder methods to make NN implementation easier/more intuitive. Functionally is about
+    the same as a numpy.array besides the __matmul__ override.
+    """
     def __init__(self, vals):
         self.vals = np.asarray(vals, dtype=float)
 
@@ -19,7 +22,11 @@ class InputVec:
 
 
 class Layer:
+    """
+    Represents one layer in a neural network.
+    """
     def __init__(self, dim, last_dim, forward_prop=sigmoid, backward_prop=sigmoid_d, learning_rate=0.5):
+        self.dim = dim
         self.weights = np.random.uniform(-1.0, 1.0, (last_dim, dim))
         self.biases = np.zeros(dim, dtype=float)
 
@@ -33,6 +40,12 @@ class Layer:
         self.learning_rate = learning_rate
 
     def __rmatmul__(self, other):
+        """
+        A matmul between an InputVec @ Layer represents passing in the input vector into the layer and processing one forward step
+        in the neural network.
+        
+        other: InputVec
+        """
         assert isinstance(other, InputVec)
         return InputVec(self.forward(other.vals))
 
@@ -62,53 +75,3 @@ class Layer:
 
     def forward_propagate(self, input_vals):
         return self.forward_prop(input_vals)
-
-
-if __name__ == "__main__":
-    X = np.array([
-        [0, 0],
-        [0, 1],
-        [1, 0],
-        [1, 1]
-    ], dtype=float)
-
-    y = np.array([
-        [0],
-        [1],
-        [1],
-        [0]
-    ], dtype=float)
-
-    layers = [
-        Layer(2, 2),
-        Layer(1, 2)
-    ]
-
-    # learning_rate = 0.5
-    epochs = 10000
-
-    for epoch in range(epochs):
-        total_loss = 0.0
-
-        for x_vals, target in zip(X, y):
-            out = InputVec(x_vals)
-            for layer in layers:
-                out = out @ layer
-
-            error = out - target
-            total_loss += np.mean(error ** 2)
-
-            grad = 2 * error
-            for layer in reversed(layers):
-                grad = layer.backward(grad)
-
-        if epoch % 1000 == 0:
-            print(f"epoch {epoch:5d} | loss {total_loss / len(X):.6f}")
-
-    print("\nFinal predictions:")
-    for x_vals, target in zip(X, y):
-        out = x_vals
-        for layer in layers:
-            out = layer.forward(out)
-
-        print(f"{x_vals} -> {np.round(out, 3)} target={target}")
