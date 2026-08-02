@@ -39,10 +39,10 @@ def softmax(x):
     return ex / sum(ex)
 
 def MSE(x, y):
-    """
-    Gradient: 2 * (x - y)
-    """
     return np.mean((x - y)**2)
+
+def MSE_grad(x, y):
+    return 2 * (x - y)
 
 def cross_entropy(p, y, softmax_preprocess=True):
     """
