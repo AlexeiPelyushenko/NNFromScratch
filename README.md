@@ -4,3 +4,4 @@ Neural Networks made completely from scratch. The only external library allowed 
 Currently capabilities:
 - Solve XOR (MSE, Cross Entropy)
 - Linear regression through feed forward neural network
+- Classification problems
