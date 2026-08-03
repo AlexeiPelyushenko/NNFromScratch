@@ -1,4 +1,4 @@
-# NNFromScratch
+# NNsCompletelyFromScratch
 Neural Networks made completely from scratch. The only external library allowed for computation is Numpy. Ie, no pytorch/huggingface/sklearn (besides downloading datasets), etc.
 
 Currently capabilities:
