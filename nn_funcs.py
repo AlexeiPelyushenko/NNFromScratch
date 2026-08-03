@@ -11,9 +11,11 @@ with open("config.yaml", "r") as f:
 """
 Convention:
 
-Activation functions + their derivatives should return numpy arrays.
+Everything should return numpy arrays if applicable.
 Loss functions return floats.
 """
+
+# --------------------------- Activation functions ---------------------------
 
 identity = lambda x: x
 identity_d = lambda x: np.ones_like(x)
@@ -36,9 +38,24 @@ def leaky_RELU(x):
 def leaky_RELU_d(x):
     return np.where(x > 0, 1.0, config.LEAKY_RELU_COEFF)
 
+def GELU(x):
+    return x * standard_normal_cdf(x)
+
+def GELU_d(x): # TODO: Make this use a cached forward pass result
+    return standard_normal_cdf(x) + x * standard_normal_pdf(x)
+
+def SiLU(x):
+    return x * sigmoid(x)
+
+def SiLU_d(x):
+    sig_x = sigmoid(x)
+    return sig_x * (1 + x * (1 - sig_x))
+
 def softmax(x):
     ex = np.pow(np.e, x)
     return ex / sum(ex)
+
+# --------------------------- Loss functions ---------------------------
 
 def MSE(x, y):
     return np.mean((x - y)**2)
@@ -58,10 +75,12 @@ def cross_entropy(p, y, softmax_preprocess=True):
         p = softmax(p)
     return -np.sum(y * np.log(p))
 
+# --------------------------- Distribution functions ---------------------------
+
 def gaussian_boxmuller(n, mu=0, sigma=1, cutoff=None):
     """
     Uses the Box-Muller algorithm to generate a gaussian distribution.
-    If truncate is set to a value, points that are -truncate- standard distributions away from the mean are removed.
+    If cutoff is set to a value, points that are -cutoff- standard distributions away from the mean are removed.
     """
     result = []
     while len(result) < n:
@@ -85,7 +104,16 @@ def gaussian_boxmuller(n, mu=0, sigma=1, cutoff=None):
     
     return mu + sigma * np.array(result)
 
-def he_initialization(in_dim, out_dim, cutoff=3):
+def _init_helper(in_dim, out_dim, sigma, cutoff):
+    std_correction = truncated_variance(cutoff)**0.5 if cutoff else 1
+    sigma = sigma / std_correction
+    if cutoff:
+        results = gaussian_boxmuller(in_dim * out_dim, 0, sigma, cutoff)
+    else:
+        results = gaussian_boxmuller(in_dim * out_dim, 0, sigma)
+    return results.reshape((in_dim, out_dim))
+
+def he_initialization(in_dim, out_dim, cutoff=3): # good for linear unit activations
     """
     Kaiming He initialization. By default uses gaussian distribution with variance = 2/n_in and opts for truncating values
     > truncate standard deviations away from 0. Standard deviation is analytically scaled up to account for extreme values being removed.
@@ -93,28 +121,60 @@ def he_initialization(in_dim, out_dim, cutoff=3):
     
     cutoff: How many standard deviations away to not include points. Set to False/None to not truncate.
     """
-    
-    std_correction = truncated_variance(cutoff)**0.5 if cutoff else 1
     he_std = (2/in_dim)**0.5
-    sigma = he_std / std_correction
-    if cutoff:
-        results = gaussian_boxmuller(in_dim * out_dim, 0, sigma, cutoff)
-    else:
-        results = gaussian_boxmuller(in_dim * out_dim, 0, sigma)
-    return results.reshape((in_dim, out_dim))
+    return _init_helper(in_dim, out_dim, he_std, cutoff)
 
-def uniform_random_initialization(in_dim, out_dim):
+def xavier_initialization(in_dim, out_dim, cutoff=3): # good for sigmoid/tanh
+    """
+    Xavier/Glorot initialization. Uses gaussian distribution with variance 2/(n_in + n_out)
+    
+    cutoff: How many standard deviations away to not include points. Set to False/None to not truncate.
+    """
+    xavier_std = (2/(in_dim + out_dim))**0.5
+    return _init_helper(in_dim, out_dim, xavier_std, cutoff)
+
+def lecun_initialization(in_dim, out_dim, cutoff=3): # good for SELU/linear
+    """
+    LeCun initialization. Uses gaussian distribution with variance 1/n_in)
+    
+    cutoff: How many standard deviations away to not include points. Set to False/None to not truncate.
+    """
+    lecun_std = (1/(in_dim))**0.5
+    return _init_helper(in_dim, out_dim, lecun_std, cutoff)
+    
+def uniform_random_initialization(in_dim, out_dim, cutoff):
     return np.random.uniform(-1.0, 1.0, (in_dim, out_dim))
+
+# --------------------------- Normalization functions ---------------------------
+
+def min_max_normalization(data_train, data_test):
+    data_min, data_max = data_train.min(axis=0), data_train.max(axis=0)
+    scaling = data_max - data_min
+    data_train = (data_train - data_min) / scaling
+    data_test  = (data_test  - data_min) / scaling
+    return data_train, data_test, scaling
+
+def z_score_normalization(data_train, data_test): # predictions_original = predictions * y_std + y_mean
+    data_mean, data_std = data_train.mean(axis=0), data_train.std(axis=0)
+    data_train = (data_train - data_mean) / data_std
+    data_test = (data_test - data_mean) / data_std
+    return data_train, data_std, data_std
 
 
 if __name__ == "__main__":
-    num_true = 0
-    n = 10000
-    distribution = he_initialization(n, 10, cutoff = 3)
-    print(distribution)
+    x = np.array([1, 2, 3, 4])
     
-    variance = sum((distribution.mean() - distribution)**2) / n
-    print(variance)
+    print(GELU(x))
+    print(GELU_d(x))
+    
+    
+    # num_true = 0
+    # n = 10000
+    # distribution = he_initialization(n, 10, cutoff = 3)
+    # print(distribution)
+    
+    # variance = sum((distribution.mean() - distribution)**2) / n
+    # print(variance)
     
     # print("mean:", distribution.mean())
     # print("he-variance", 2/n)
