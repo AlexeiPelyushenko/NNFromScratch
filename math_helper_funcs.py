@@ -4,6 +4,7 @@ import math
 def erf(x):
     """
     Abramowitz & Stegun approximation for the error function
+    X can be a single number or numpy array
     """
     p = 0.3275911
     a1 = 0.254829592
@@ -12,15 +13,15 @@ def erf(x):
     a4 = -1.453152027
     a5 = 1.061405429
     
-    sign = 1 if x >= 0 else -1
-    x = abs(x)
+    sign = np.where(x >= 0, 1, -1)
+    x = np.abs(x)
     t = 1 / (1 + p*x)
     
-    output = 1 - (a1 * t + a2 * t**2 + a3 * t**3 + a4 * t**4 + a5 * t**5) * math.pow(math.e, -x**2)
+    output = 1 - (a1 * t + a2 * t**2 + a3 * t**3 + a4 * t**4 + a5 * t**5) * np.power(np.e, -x**2)
     return sign * output
 
 def standard_normal_pdf(x):
-    return 1/(2 * math.pi)**0.5 * math.pow(math.e, -x**2/2)
+    return 1/(2 * np.pi)**0.5 * np.power(np.e, -x**2/2)
 
 def standard_normal_cdf(x):
     return 0.5 * (1 + erf(x / 2**0.5))
