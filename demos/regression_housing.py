@@ -17,9 +17,9 @@ if __name__ == "__main__":
     max_vals = raw_X.max(axis=0)
     X = (raw_X - min_vals) / (max_vals - min_vals)
 
-    nn = Network(MSE, MSE_grad, 25, 0.02, 8)
-    nn.add_layer("FF", 256, leaky_RELU, leaky_RELU_d)
+    nn = Network(MSE, MSE_grad, 25, 0.01, 8)
+    nn.add_layer("FF", 256, leaky_RELU, leaky_RELU_d, he_initialization)
     nn.add_layer("FF", 128, sigmoid, sigmoid_d)
     nn.add_layer("FF", 1, identity, identity_d)
     
-    nn.train(X, y, num_sample_results=30)
+    nn.train(X, y, num_sample_results=2)
