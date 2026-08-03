@@ -68,9 +68,9 @@ class FFLayer(BaseLayer):
     """
     Feedforward layer of a neural network.
     """
-    def __init__(self, dim, last_dim, forward_prop=sigmoid, backward_prop=sigmoid_d, learning_rate=0.5):
+    def __init__(self, dim, last_dim, forward_prop=sigmoid, backward_prop=sigmoid_d, initialization=uniform_random_initialization, learning_rate=0.5):
         super().__init__(dim, last_dim, learning_rate)
-        self.weights = np.random.uniform(-1.0, 1.0, (last_dim, dim))
+        self.weights = initialization(last_dim, dim)
         self.biases = np.zeros(dim, dtype=float)
 
         self.forward_prop = forward_prop

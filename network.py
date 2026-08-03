@@ -17,14 +17,14 @@ class Network:
         self.input_vector_dim = input_vector_dim
         
     
-    def add_layer(self, layer_type, dim, forward, backward):
+    def add_layer(self, layer_type, dim, forward, backward, initialization=uniform_random_initialization):
         if not self.layers:
             last_dim = self.input_vector_dim
         else:
             last_dim = self.layers[-1].dim
         
         if layer_type == "FF":
-            self.layers.append(FFLayer(dim, last_dim, forward, backward, self.learning_rate))
+            self.layers.append(FFLayer(dim, last_dim, forward, backward, initialization, self.learning_rate))
             
     
     def inference(self, input_vec):
