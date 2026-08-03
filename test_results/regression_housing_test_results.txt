@@ -1,0 +1,59 @@
+From demo: regression_housing.py
+---------------------------------------------------------------------
+
+nn = Network(MSE, MSE_grad, 25, 0.001, 8)
+nn.add_layer("FF", 256, RELU, RELU_d, he_initialization)
+nn.add_layer("FF", 128, RELU, RELU_d, he_initialization)
+nn.add_layer("FF", 1, identity, identity_d)
+
+Minimum training loss: 0.450991
+Testing loss: 0.458431
+
+---------------------------------------------------------------------
+
+nn = Network(MSE, MSE_grad, 25, 0.001, 8)
+nn.add_layer("FF", 256, leaky_RELU, leaky_RELU_d, he_initialization)
+nn.add_layer("FF", 128, leaky_RELU, leaky_RELU_d, he_initialization)
+nn.add_layer("FF", 1, identity, identity_d)
+
+Minimum training loss: 0.436126
+Testing loss: 0.419451
+
+---------------------------------------------------------------------
+
+nn = Network(MSE, MSE_grad, 25, 0.001, 8)
+nn.add_layer("FF", 256, GELU, GELU_d, he_initialization)
+nn.add_layer("FF", 128, GELU, GELU_d, he_initialization)
+nn.add_layer("FF", 1, identity, identity_d)
+
+Minimum training loss: 0.476630
+Testing loss: 0.470193
+
+Notes: takes significantly longer to train than leaky ReLU
+
+---------------------------------------------------------------------
+
+nn = Network(MSE, MSE_grad, 25, 0.001, 8)
+nn.add_layer("FF", 256, SiLU, SiLU_d, he_initialization)
+nn.add_layer("FF", 128, SiLU, SiLU_d, he_initialization)
+nn.add_layer("FF", 1, identity, identity_d)
+
+Minimum training loss: 0.494345
+Testing loss: 0.529381
+
+---------------------------------------------------------------------
+
+nn = Network(MSE, MSE_grad, 25, 0.001, 8)
+nn.add_layer("FF", 256, sigmoid, sigmoid_d, xavier_initialization)
+nn.add_layer("FF", 128, sigmoid, sigmoid_d, xavier_initialization)
+nn.add_layer("FF", 1, identity, identity_d)
+
+Minimum training loss: 0.622402
+Testing loss: 0.681960
+
+--------------------------------------------------------------------- Conclusion ---------------------------------------------------------------------
+
+It's disheartening to see that the more fancy activation functions (GELU, SiLU) underperform here compared to very simple ones like ReLU and leaky ReLU. Though, after
+some research, that seems to be expected. GELU and SiLU were made for deep, large neural networks where smooth gating helps with optimization on a much larger scale.
+The networks I'm building for the linear regression task in median house prices are very simple, and don't require complex activation functions to begin with. It's like
+using a race car to get groceries. Also sigmoid is not good for this task.
